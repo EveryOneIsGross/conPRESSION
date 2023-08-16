@@ -1,39 +1,3 @@
-'''Explanation of Error States:
-
-Column Limit Determination:
-The column limit for shaping the encoded response into blocks is determined based on the number of spaces and the total length of the response.
-This column limit is used to create square-shaped encoded response blocks.
-In some cases, this approach might not yield perfectly shaped blocks.
-
-Encoding and Padding:
-The code uses a special marker to denote the beginning and end of encoded content.
-When generating encoded response blocks, padding is added using dots to achieve a square slab shape.
-Padding may not always yield perfect results, and in some cases, it might add more padding than necessary.
-It can grok those errors I have still where it isn't strip markers or periods and wil defs create soup.
-
-User: sumamrise
-
-Pre-encoded Response: ] th[seo] [tomor] ry] ereas] ollmors] erses] nthes] orts] ollcen] tate] ollme] sot] erth] ynapr] olls] ethe] ollst] orch[e] sth] olltea] ryto] ollmors] erses] nthes] orts] ollcen] tate] ollme] sot] erth] ynapr] olls] ethe] ollst] orch[e] sth] olltea] ryto] ollmors] erses] nthes] orts] ollcen] tate] ollme] sot] erth] ynapr] olls] ethe] ollst] 
-orch[e] sth] olltea] ryto] ollmors] erses] nthes] orts] ollcen] tate] ollme] sot] erth] ynapr] olls] ethe] ollst] orch[e] 
-sth] olltea] ryto] ollmors] er
-
-
-        "[[19x19-005]-rsthyollteatrytoool]]]",
-        "[[19x19-004]-lmorsrersesynthesto]]]",
-        "[[19x19-003]-rtsoollcenrtateyoll]]]",
-        "[[19x19-002]-metsotoerthrynapryo]]]",
-        "[[19x19-001]-llstetheoollstrorch]]]",
-        "[[19x19-000]-eysthtollteaorytoro]]]"
-    ],
-    "Decoded Summary": [
-        "",
-        "ynaprynaprynaprynaprynaprynaprynaprynaprynaprynaprynaprynaprynaprynaprynaprtomorthtatetatetatetatetatetatetatetatetatetatetatetatetatetateta"
-
-Disclaimer:
-
-This code is a proof of concept and example implementation of a chat agent. 
-It demonstrates the use of context management, encoding, and shaping responses into blocks. 
-'''
 import gpt4all
 import json
 from rake_nltk import Rake
@@ -107,25 +71,8 @@ def check_for_overflowing_lines(encoded_lines, max_length):
     corrected_lines = [trim_content(line, max_length) for line in overflowing_lines]
     return corrected_lines
 
-def generate_encoded_response_blocks(encoded_response, column_limit):
-    """Generate encoded response blocks conforming to strict shape dimensions."""
-    
-    # Split the encoded response into slabs of the given column limit
-    encoded_lines = [
-        f"[[{column_limit}x{column_limit}-{str(index).zfill(3)}]-{encoded_response[i:i+column_limit]}{marker_end}]"
-        for index, i in enumerate(range(0, len(encoded_response), column_limit))
-    ]
-    
-    # Remove the last slab if it contains padding or is shorter than column limit
-    if encoded_lines and (encoded_lines[-1][-column_limit-3:-3].count('.') > 0 or len(encoded_lines[-1]) < column_limit):
-        encoded_lines = encoded_lines[:-1]
 
-    # Check for overflowing lines and correct them
-    max_length = len("[[10x10-000]-\nWeucansus]]]")  # Using one of the lines as a reference for the maximum length
-    corrected_lines = check_for_overflowing_lines(encoded_lines, max_length)
     
-    return corrected_lines
-
 def basic_keyword_extraction(text):
     keywords = [word for word in text.split() if len(word) > 3]
     return ' '.join(keywords)
@@ -147,6 +94,30 @@ def decode(encoded_response, marker_start, marker_end):
     decoded_summary = ''.join(encoded_response)
     return keyword_string, decoded_summary
 
+
+def mask_and_decode(encoded_response, decoded_summary):
+    # Split the decoded summary into keywords
+    keywords = decoded_summary.split()
+    # Global markers for encoding
+
+    # Initialize an empty string to store the final decoded response
+    final_decoded_response = ""
+    
+    # Iterate over each encoded line in the encoded response
+    for line in encoded_response:
+        # Remove the markers from the line
+        line_content = remove_markers_from_slab(line)
+        
+        # Iterate over each keyword in the decoded summary
+        for keyword in keywords:
+            # If the keyword is found in the line content, replace it
+            if keyword in line_content:
+                line_content = line_content.replace(keyword, "", 1)
+                final_decoded_response += keyword + " "
+        
+        # Append the remaining line content to the final decoded response
+        final_decoded_response += line_content + " "
+    
 def truncate_context(context, max_chars=256):
     """
     Truncates the context if it exceeds the specified number of characters.
@@ -206,10 +177,9 @@ def pad_encoded_response(encoded_response, column_limit):
     """Pad the encoded response to achieve a square slab shape."""
     total_chars = len(encoded_response)
     padding_needed = max(0, column_limit * column_limit - total_chars)
-    return encoded_response + '.' * padding_needed  # Padding with dots
+    return encoded_response + ' ' * padding_needed
 
-
-def generate_encoded_response_blocks(encoded_response, column_limit):
+def generate_encoded_response_blocks(encoded_response, column_limit=4):
     """Generate encoded response blocks conforming to strict shape dimensions."""
     
     # Calculate the number of lines needed
@@ -220,14 +190,10 @@ def generate_encoded_response_blocks(encoded_response, column_limit):
     
     # Split the encoded response into slabs of the given column limit
     encoded_lines = [
-        f"[[{column_limit}x{column_limit}-{str(max_lines - index).zfill(3)}]-{encoded_response[i:i+column_limit]}{marker_end}]"
+        f"[[{column_limit}x{num_lines}-{str(max_lines - index).zfill(3)}]-{encoded_response[i:i+column_limit]}{marker_end}]"
         for index, i in enumerate(range(0, len(encoded_response), column_limit))
+        if not encoded_response[i:i+column_limit].endswith("-001]")
     ]
-    
-    # Check if the last line is shorter than the column limit and pad it
-    if encoded_lines and len(encoded_lines[-1]) < column_limit + len("[[10x10-000]-]]"):
-        padding_needed = column_limit - len(encoded_lines[-1]) + len("[[10x10-000]-]]")
-        encoded_lines[-1] = encoded_lines[-1][:-len(marker_end)] + '.' * padding_needed + marker_end
     
     return encoded_lines
 
@@ -281,11 +247,19 @@ def chat_agent():
             break
 
         # Truncate context if it's too long
-        context = truncate_context(context, 2000)  # Using 2000 characters as an example limit
+        context = truncate_context(context, 1024)  # 1024 as limit 
 
         
-        response = response_agent.generate_response(user_input, context)
+        combined_prompt = f"{context} {user_input}" if context else user_input
+        response = response_agent.generate_response(combined_prompt)
+
         summary = strip_punctuation(summary_agent.generate_summary(response))
+        # Diagnostic printout for comparison
+        print("\n--- Diagnostic Printout ---")
+        print("Original Response:", response)
+        print("Encoded Lines:", encoded_lines)
+        print("Decoded Response:", decoded_response)
+        print("---------------------------\n")
 
         print("\nPre-encoded Response:", response)
         print("Pre-encoded Summary:", summary)
@@ -294,17 +268,17 @@ def chat_agent():
         column_limit = determine_column_limit_based_on_spaces_and_length(encoded_response)
         
         encoded_response = pad_encoded_response(encoded_response, column_limit)
+
         encoded_lines = generate_encoded_response_blocks(encoded_response, column_limit)
-        encoded_input = encode(user_input, summary)
         encoded_summary = encode(summary, summary)
         
         data = {
-            "User": encoded_input,
+            "User": user_input,
             "Response": encoded_response,
             "Summary": encoded_summary,
             "Encoded Response": encoded_lines,
             "Decoded Summary": decode(encoded_summary, marker_start, marker_end)
-        }
+            }
 
         # Append the latest entry to the history
         recorded_data.append(data)
@@ -319,10 +293,10 @@ def chat_agent():
         
         # Generate the cleaned context from the latest encoded response
         cleaned_encoded_response = ' '.join([remove_markers_from_slab(slab) for slab in data["Encoded Response"]])
-
-        # Combine the decoded summary and cleaned encoded response to form the context
-        context = f"{decoded_summary} {cleaned_encoded_response}"
-
+        # Decode the response using the mask_and_decode function
+        decoded_response = mask_and_decode(cleaned_encoded_response, decoded_summary)
+        # Combine the encondeded response and decoded summary to form the new context
+        context = f"{decoded_summary} {decoded_response}"
 
 if __name__ == "__main__":
     chat_agent()
