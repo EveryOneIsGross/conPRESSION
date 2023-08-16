@@ -3,6 +3,7 @@ conPRESSION
 
 '''a novel noise-tolerant compression/recovery method for piping truncation protected context into agents'''
 
+![conPRESSION](https://github.com/EveryOneIsGross/conPRESSION/assets/23621140/7002f981-17ea-4366-a6f6-fef7173d0845)
 
 ```
 User: how does one pursue their True Will?
