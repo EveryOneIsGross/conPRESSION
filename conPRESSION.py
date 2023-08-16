@@ -1,19 +1,15 @@
 '''Explanation of Error States:
 
-Context Truncation:
-If the context provided by the user exceeds a certain character limit (e.g., 2000 characters), the chat agent will truncate it to fit within that limit.
-As a result, the agent will consider only the latest portion of the context for generating responses.
-
 Column Limit Determination:
 The column limit for shaping the encoded response into blocks is determined based on the number of spaces and the total length of the response.
 This column limit is used to create square-shaped encoded response blocks.
-In some cases, this approach might not yield perfectly shaped blocks, especially if the response contains an unusual number of spaces.
+In some cases, this approach might not yield perfectly shaped blocks.
 
 Encoding and Padding:
 The code uses a special marker to denote the beginning and end of encoded content.
 When generating encoded response blocks, padding is added using dots to achieve a square slab shape.
 Padding may not always yield perfect results, and in some cases, it might add more padding than necessary.
-It can grok those errors and wil defs create soup.
+It can grok those errors I have still where it isn't strip markers or periods and wil defs create soup.
 
 User: sumamrise
 
