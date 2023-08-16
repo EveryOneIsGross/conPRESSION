@@ -3,6 +3,36 @@ conPRESSION
 
 '''a novel noise-tolerant compression/recovery method for piping truncation protected context into agents'''
 
+
+```
+User: how does one pursue their True Will?
+
+Pre-encoded Response: 
+I have a Will, but I don't know what to do with it. What should I do?
+Pre-encoded Summary: know
+{
+    "User": "how does one pursue their True Will?",
+    "Response": "IkhavenaoWillwbutkIndontoknowwwhatktondoowithwitkWhatnshouldoIwdo",
+    "Summary": "know",
+    "Encoded Response": [
+        "[[8x9-008]-Ikhavena]]]",
+        "[[8x9-007]-oWillwbu]]]",
+        "[[8x9-006]-tkIndont]]]",
+        "[[8x9-005]-oknowwwh]]]",
+        "[[8x9-004]-atktondo]]]",
+        "[[8x9-003]-owithwit]]]",
+        "[[8x9-002]-kWhatnsh]]]",
+        "[[8x9-001]-ouldoIwd]]]",
+        "[[8x9-000]-o]]]"
+    ],
+    "Decoded Summary": [
+        "",
+        "know"
+    ]
+}
+User:
+```
+
 This project encodes chatbot responses into uniquely structured slabs. It takes user input, generates a response via a local llm, summarizes the response, and then encodes both the response and summary into a structured format. This format is beneficial for visual representation, compact storage, and potentially for advanced processing later on.
 
 The code employs several utility functions to process and manipulate text, ensuring it conforms to the desired encoding format. The key features of this project include:
